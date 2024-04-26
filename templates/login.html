@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    background-image: radial-gradient(at 25% 23%, hsla(34, 73%, 70%, 1) 0, transparent 44%),
+                      radial-gradient(at 39% 28%, hsla(37, 62%, 62%, 1) 0, transparent 58%),
+                      radial-gradient(at 70% 67%, hsla(194, 98%, 64%, 1) 0, transparent 57%),
+                      radial-gradient(at 83% 45%, hsla(223, 73%, 67%, 1) 0, transparent 49%),
+                      radial-gradient(at 73% 1%, hsla(241, 82%, 70%, 1) 0, transparent 54%),
+                      radial-gradient(at 33% 30%, hsla(35, 75%, 65%, 1) 0, transparent 52%),
+                      radial-gradient(at 54% 83%, hsla(176, 63%, 64%, 1) 0, transparent 56%),
+                      radial-gradient(at 31% 58%, hsla(311, 74%, 70%, 1) 0, transparent 45%),
+                      radial-gradient(at 98% 51%, hsla(193, 77%, 72%, 1) 0, transparent 46%),
+                      radial-gradient(at 80% 86%, hsla(191, 84%, 62%, 1) 0, transparent 41%);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    width: 600px; /* Adjust the width as needed */
+    height : 300px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-top: 20px;
+}
+
+form {
+    text-align: center;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input[type="email"],
+input[type="password"],
+button[type="submit"] {
+    width: calc(70% - 20px); /* Adjust the width as needed */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+button[type="submit"] {
+    width: calc(30% - 20px);
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form action="/" method="post">
+            <div class="input-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+</html>
+
