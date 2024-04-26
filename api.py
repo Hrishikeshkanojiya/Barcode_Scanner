@@ -1,9 +1,12 @@
-from flask import Flask, render_template, request,jsonify, redirect, url_for, session
+import os
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from pyzbar import pyzbar
 import cv2
+from logger import setup_logger  # Importing the setup_logger function from logger.py
 
 app = Flask(__name__)
+logger = setup_logger()
 
 # Set a secret key for session management (replace 'your_secret_key' with an actual secret key)
 app.secret_key = '1234'
@@ -31,7 +34,8 @@ def BarcodeReader(image):
 
     # If not detected then print the message
     if not detectedBarcodes:
-        print("Barcode Not Detected or your barcode is blank/corrupted!")
+        logger.warning(
+            "Barcode Not Detected or your barcode is blank/corrupted!")  # Log warning if barcode not detected
     else:
         # Traverse through all the detected barcodes in image
         for barcode in detectedBarcodes:
@@ -52,15 +56,14 @@ def BarcodeReader(image):
                 if barcode_data.startswith("0"):
                     # Remove the first zero if it exists
                     barcode_data = barcode_data[1:]
-                    print("Data:", barcode_data)
-                    print("Type:", "UPC-A")
+                    logger.info(f"Data: {barcode_data} Type: UPC-A")  # Log barcode data with type
                     barcode_output.append(barcode_data)
                 else:
                     # If no zero at the beginning, print without changes
-                    print("Data:", barcode_data)
-                    print("Type:", barcode.type)
+                    logger.info(f"Data: {barcode_data} Type: {barcode.type}")  # Log barcode data with type
                     barcode_output.append(barcode_data)
-        return barcode_output
+
+    return img, barcode_output
 
 
 # Route for the login page
@@ -88,37 +91,34 @@ def barcode_detection():
     # Check if the user is logged in (i.e., 'logged_in' session variable is True)
     if not session.get('logged_in'):
         # If not logged in, redirect to the login page
+        logger.warning(
+            "Unsuccessful Login")
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        # Check if the post request has the file part
         if 'file' not in request.files:
             return render_template('index.html', message='No file part')
 
         file = request.files['file']
 
-        # If the user does not select a file, the browser submits an empty file without a filename
         if file.filename == '':
             return render_template('index.html', message='No selected file')
 
-        # If the file exists and has an allowed extension
         if file and allowed_file(file.filename):
-            # Save the uploaded file to the upload folder
             filename = secure_filename(file.filename)
-            filepath = f"{app.config['UPLOAD_FOLDER']}/{filename}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
-            # Detect barcodes in the uploaded image
-            barcode_data = BarcodeReader(filepath)
-            print(barcode_data)
-            # Render the barcode detection page with the uploaded image and barcode data
-            return render_template('index.html', image_file=filename, barcode_data=barcode_data)
+            processed_img, barcode_data = BarcodeReader(filepath)
 
-    # Render the barcode detection page template
+            processed_filename = f"processed_{filename}"
+            processed_filepath = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
+            cv2.imwrite(processed_filepath, processed_img)
+
+            return render_template('index.html', processed_image_file=processed_filename, barcode_data=barcode_data)
+
     return render_template('index.html')
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-

@@ -105,8 +105,8 @@
 
         .image {
             margin: 10px;
-            width: 600px; /* Adjust image width */
-            height: auto; /* Maintain aspect ratio */
+            width: auto; /* Adjust image width */
+            height: 250px; /* Maintain aspect ratio */
             border: 1px solid #ccc;
             border-radius: 5px;
         }
@@ -122,13 +122,15 @@
 <body>
     <div id="container">
         <h1>Barcode Detection</h1>
-        <form action="/" method="post" enctype="multipart/form-data">
+        <form action="/barcode_detection" method="post" enctype="multipart/form-data">
             <input type="file" name="file" accept=".png, .jpg, .jpeg">
             <input type="submit" value="Upload">
         </form>
-        {% if image_file %}
-        <h2>Uploaded Image:</h2>
-        <img src="{{ url_for('static', filename='images/' + image_file) }}" alt="Uploaded Image">
+        {% if processed_image_file %}
+        <h2>Processed Image:</h2>
+        <div class="image">
+            <img src="{{ url_for('static', filename='images/' + processed_image_file) }}" alt="Processed Image">
+        </div>
         {% endif %}
 
         {% if barcode_data %}
