@@ -1,18 +1,25 @@
-from flask import Flask, render_template, request,jsonify, redirect, url_for
+from flask import Flask, render_template, request,jsonify, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from pyzbar import pyzbar
 import cv2
 
 app = Flask(__name__)
 
+# Set a secret key for session management (replace 'your_secret_key' with an actual secret key)
+app.secret_key = '1234'
+
 # Define the upload folder and allowed extensions for uploaded files
 UPLOAD_FOLDER = 'static/images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+STATIC_EMAIL = 'user@example.com'
+STATIC_PASSWORD = 'Pass@123'
+
 
 # Function to check if the file extension is allowed
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def BarcodeReader(image):
     # read the image in numpy array using cv2
@@ -26,10 +33,8 @@ def BarcodeReader(image):
     if not detectedBarcodes:
         print("Barcode Not Detected or your barcode is blank/corrupted!")
     else:
-
         # Traverse through all the detected barcodes in image
         for barcode in detectedBarcodes:
-
             # Locate the barcode position in image
             (x, y, w, h) = barcode.rect
 
@@ -58,42 +63,6 @@ def BarcodeReader(image):
         return barcode_output
 
 
-
-# # Route to upload an image and detect barcodes
-# @app.route('/', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         # Check if the post request has the file part
-#         if 'file' not in request.files:
-#             return render_template('index.html', message='No file part')
-#
-#         file = request.files['file']
-#
-#         # If the user does not select a file, the browser submits an empty file without a filename
-#         if file.filename == '':
-#             return render_template('index.html', message='No selected file')
-#
-#         # If the file exists and has an allowed extension
-#         if file and allowed_file(file.filename):
-#             # Save the uploaded file to the upload folder
-#             filename = secure_filename(file.filename)
-#             filepath = f"{app.config['UPLOAD_FOLDER']}/{filename}"
-#             file.save(filepath)
-#
-#             # Detect barcodes in the uploaded image
-#             barcode_data = BarcodeReader(filepath)
-#             print(barcode_data)
-#             # Render the template with the uploaded image and barcode data
-#             return render_template('index.html', image_file=filename, barcode_data=barcode_data)
-
-    # Render the initial upload form
-    # return render_template('index.html')
-
-
-STATIC_EMAIL = 'user@example.com'
-STATIC_PASSWORD = 'password'
-
-
 # Route for the login page
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -104,6 +73,8 @@ def login():
 
         # Check if email and password match the static values
         if email == STATIC_EMAIL and password == STATIC_PASSWORD:
+            # Set the 'logged_in' session variable to True
+            session['logged_in'] = True
             # Redirect to the barcode detection page upon successful login
             return redirect(url_for('barcode_detection'))
 
@@ -114,6 +85,11 @@ def login():
 # Route for the barcode detection page
 @app.route('/barcode_detection', methods=['GET', 'POST'])
 def barcode_detection():
+    # Check if the user is logged in (i.e., 'logged_in' session variable is True)
+    if not session.get('logged_in'):
+        # If not logged in, redirect to the login page
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         # Check if the post request has the file part
         if 'file' not in request.files:
@@ -142,9 +118,7 @@ def barcode_detection():
     return render_template('index.html')
 
 
-
 if __name__ == '__main__':
     app.run(debug=True)
-
 
 
