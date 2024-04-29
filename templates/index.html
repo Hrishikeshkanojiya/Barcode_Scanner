@@ -105,8 +105,8 @@
 
         .image {
             margin: 10px;
-            width: auto; /* Adjust image width */
-            height: 250px; /* Maintain aspect ratio */
+            width: 30%; /* Adjust image width */
+            height: auto; /* Maintain aspect ratio */
             border: 1px solid #ccc;
             border-radius: 5px;
         }
@@ -135,9 +135,11 @@
 
         {% if barcode_data %}
         <h2>Barcode Details:</h2>
-        <ul>
+        <ul style="list-style-type:none;">
             {% for barcode in barcode_data %}
-            <li><h4>Barcode No:</h4>{{ barcode }}</li>
+            <li style="display: inline-block; margin-right: 10px;">
+                <h4>Barcode Data:</h4>{{ barcode }}
+            </li>
             {% endfor %}
         </ul>
         {% else %}
