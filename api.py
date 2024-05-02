@@ -53,7 +53,7 @@ def BarcodeReader(image):
                 barcode_data = barcode.data.decode("utf-8")
 
                 # Check if the barcode data starts with zero
-                if barcode_data.startswith("0"):
+                if len(barcode_data) == 13:
                     # Remove the first zero if it exists
                     barcode_data = barcode_data[1:]
                     logger.info(f"Data: {barcode_data} Type: UPC-A")  # Log barcode data with type
