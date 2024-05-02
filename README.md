@@ -2,7 +2,7 @@
 
 The EAN-13 to UPC-A code snippet is down below:
 
-
+```python
 def ean13_to_upca(ean13):
     # Remove the leading digit (country code)
     ean12 = ean13[1:]
@@ -21,3 +21,4 @@ def calculate_checksum(digits):
         return 0
     else:
         return 10 - remainder
+```
