@@ -1,6 +1,8 @@
 # Barcode_Scanner
 
 The EAN-13 to UPC-A code snippet is down below:
+
+
 def ean13_to_upca(ean13):
     # Remove the leading digit (country code)
     ean12 = ean13[1:]
