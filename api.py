@@ -3,13 +3,18 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from werkzeug.utils import secure_filename
 from pyzbar import pyzbar
 import cv2
+import secrets
 from logger import setup_logger  # Importing the setup_logger function from logger.py
 
 app = Flask(__name__)
 logger = setup_logger()
 
-# Set a secret key for session management (replace 'your_secret_key' with an actual secret key)
-app.secret_key = '1234'
+def generate_secret_key():
+    return secrets.token_hex(16)
+
+# Set the secret key
+app.secret_key = generate_secret_key()
+
 
 # Define the upload folder and allowed extensions for uploaded files
 UPLOAD_FOLDER = 'static/images'
@@ -121,4 +126,5 @@ def barcode_detection():
 
 
 if __name__ == '__main__':
+    app.secret_key = generate_secret_key()
     app.run(debug=True)
