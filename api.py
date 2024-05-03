@@ -28,6 +28,10 @@ STATIC_PASSWORD = 'Pass@123'
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def resize_image(image):
+    img = cv2.imread(image)
+    resized_img = cv2.resize(img, (250, 250))
+    return resized_img
 
 def BarcodeReader(image):
     # read the image in numpy array using cv2
@@ -113,8 +117,15 @@ def barcode_detection():
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
+            # Resize the uploaded image to 250x250
+            resized_img = resize_image(filepath)
 
-            processed_img, barcode_data = BarcodeReader(filepath)
+            # Save the resized image
+            resized_filename = f"resized_{filename}"
+            resized_filepath = os.path.join(app.config['UPLOAD_FOLDER'], resized_filename)
+            cv2.imwrite(resized_filepath, resized_img)
+
+            processed_img, barcode_data = BarcodeReader(resized_filepath)
 
             processed_filename = f"processed_{filename}"
             processed_filepath = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
