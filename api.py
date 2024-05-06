@@ -62,7 +62,7 @@ def BarcodeReader(image):
                 barcode_data = barcode.data.decode("utf-8")
 
                 # Check if the barcode data starts with zero
-                if len(barcode_data) == 13:
+                if barcode_data.startswith("0"):
                     # Remove the first zero if it exists
                     barcode_data = barcode_data[1:]
                     logger.info(f"Data: {barcode_data} Type: UPC-A")  # Log barcode data with type
@@ -76,7 +76,7 @@ def BarcodeReader(image):
 
 
 # Route for the login page
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         # Get email and password from the form
@@ -95,14 +95,14 @@ def login():
 
 
 # Route for the barcode detection page
-@app.route('/barcode_detection', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def barcode_detection():
     # Check if the user is logged in (i.e., 'logged_in' session variable is True)
-    if not session.get('logged_in'):
-        # If not logged in, redirect to the login page
-        logger.warning(
-            "Unsuccessful Login")
-        return redirect(url_for('login'))
+    # if not session.get('logged_in'):
+    #     # If not logged in, redirect to the login page
+    #     logger.warning(
+    #         "Unsuccessful Login")
+    #     return redirect(url_for('login'))
 
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -117,19 +117,14 @@ def barcode_detection():
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
+
+            processed_img, barcode_data = BarcodeReader(filepath)
+
             # Resize the uploaded image to 250x250
             resized_img = resize_image(filepath)
-
-            # Save the resized image
-            resized_filename = f"resized_{filename}"
-            resized_filepath = os.path.join(app.config['UPLOAD_FOLDER'], resized_filename)
-            cv2.imwrite(resized_filepath, resized_img)
-
-            processed_img, barcode_data = BarcodeReader(resized_filepath)
-
             processed_filename = f"processed_{filename}"
             processed_filepath = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
-            cv2.imwrite(processed_filepath, processed_img)
+            cv2.imwrite(processed_filepath, resized_img)
 
             return render_template('index.html', processed_image_file=processed_filename, barcode_data=barcode_data)
 
@@ -137,5 +132,5 @@ def barcode_detection():
 
 
 if __name__ == '__main__':
-    app.secret_key = generate_secret_key()
+    # app.secret_key = generate_secret_key()
     app.run(debug=True)
