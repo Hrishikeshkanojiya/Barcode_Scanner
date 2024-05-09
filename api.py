@@ -9,12 +9,13 @@ from logger import setup_logger  # Importing the setup_logger function from logg
 app = Flask(__name__)
 logger = setup_logger()
 
+
 def generate_secret_key():
     return secrets.token_hex(16)
 
+
 # Set the secret key
 app.secret_key = generate_secret_key()
-
 
 # Define the upload folder and allowed extensions for uploaded files
 UPLOAD_FOLDER = 'static/images'
@@ -28,10 +29,6 @@ STATIC_PASSWORD = 'Pass@123'
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def resize_image(image):
-    img = cv2.imread(image)
-    resized_img = cv2.resize(img, (250, 250))
-    return resized_img
 
 def BarcodeReader(image):
     # read the image in numpy array using cv2
@@ -54,7 +51,7 @@ def BarcodeReader(image):
             # Put the rectangle in image using
             # cv2 to highlight the barcode
             cv2.rectangle(img, (x - 10, y - 10),
-                          (x + w + 10, y + h + 10),
+                          (x + w + 10, y + h + 30),
                           (255, 0, 0), 2)
 
             if barcode.data != b"":
@@ -121,7 +118,7 @@ def barcode_detection():
             processed_img, barcode_data = BarcodeReader(filepath)
 
             # Resize the uploaded image to 250x250
-            resized_img = resize_image(filepath)
+            resized_img = cv2.resize(processed_img, (250, 250))
             processed_filename = f"processed_{filename}"
             processed_filepath = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
             cv2.imwrite(processed_filepath, resized_img)
