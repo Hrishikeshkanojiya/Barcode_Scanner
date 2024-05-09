@@ -19,6 +19,9 @@ app.secret_key = generate_secret_key()
 
 # Define the upload folder and allowed extensions for uploaded files
 UPLOAD_FOLDER = 'static/images'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 STATIC_EMAIL = 'user@example.com'
