@@ -33,6 +33,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+
 def BarcodeReader(image):
     # read the image in numpy array using cv2
     img = cv2.imread(image)
