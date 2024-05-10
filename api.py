@@ -1,10 +1,11 @@
 import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+import numpy as np
+from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from pyzbar import pyzbar
 import cv2
 import secrets
-from logger import setup_logger  # Importing the setup_logger function from logger.py
+from logger import setup_logger
 
 app = Flask(__name__)
 logger = setup_logger()
@@ -21,7 +22,6 @@ app.secret_key = generate_secret_key()
 UPLOAD_FOLDER = 'static/images'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 STATIC_EMAIL = 'user@example.com'
@@ -41,10 +41,76 @@ def BarcodeReader(image):
     # Decode the barcode image
     detectedBarcodes = pyzbar.decode(img)
 
+    image = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
+    closed = cv2.morphologyEx(image, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (1, 21)))
+
+    dens = np.sum(img, axis=0)
+
+    thresh = closed.copy()
+    for idx, val in enumerate(dens):
+        if (val < 10800).all():
+            thresh[:, idx] = 0
+
+    (_, thresh2) = cv2.threshold(thresh, 128, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # Decode the barcode image
+    undetectedBarcodes = pyzbar.decode(thresh2)
+
     # If not detected then print the message
-    if not detectedBarcodes:
-        logger.warning(
-            "Barcode Not Detected or your barcode is blank/corrupted!")  # Log warning if barcode not detected
+    if not detectedBarcodes and not undetectedBarcodes:
+        logger.warning("No barcodes detected or your barcode is blank/corrupted!")
+    elif detectedBarcodes and undetectedBarcodes:
+        # Traverse through all the detected barcodes in image
+        for barcode in undetectedBarcodes:
+            # Locate the barcode position in image
+            (x, y, w, h) = barcode.rect
+
+            # Put the rectangle in image using
+            # cv2 to highlight the barcode
+            cv2.rectangle(img, (x - 10, y - 10),
+                          (x + w + 10, y + h + 30),
+                          (255, 0, 0), 2)
+
+            if barcode.data != b"":
+                # Convert bytes to string
+                barcode_data = barcode.data.decode("utf-8")
+
+                # Check if the barcode data starts with zero
+                if barcode_data.startswith("0"):
+                    # Remove the first zero if it exists
+                    barcode_data = barcode_data[1:]
+                    logger.info(f"Data: {barcode_data} Type: UPC-A")  # Log barcode data with type
+                    barcode_output.append(barcode_data)
+                else:
+                    # If no zero at the beginning, print without changes
+                    logger.info(f"Data: {barcode_data} Type: {barcode.type}")  # Log barcode data with type
+                    barcode_output.append(barcode_data)
+    elif not detectedBarcodes:
+        # Traverse through all the detected barcodes in image
+        for barcode in undetectedBarcodes:
+            # Locate the barcode position in image
+            (x, y, w, h) = barcode.rect
+
+            # Put the rectangle in image using
+            # cv2 to highlight the barcode
+            cv2.rectangle(img, (x - 10, y - 10),
+                          (x + w + 10, y + h + 30),
+                          (255, 0, 0), 2)
+
+            if barcode.data != b"":
+                # Convert bytes to string
+                barcode_data = barcode.data.decode("utf-8")
+
+                # Check if the barcode data starts with zero
+                if barcode_data.startswith("0"):
+                    # Remove the first zero if it exists
+                    barcode_data = barcode_data[1:]
+                    logger.info(f"Data: {barcode_data} Type: UPC-A")  # Log barcode data with type
+                    barcode_output.append(barcode_data)
+                else:
+                    # If no zero at the beginning, print without changes
+                    logger.info(f"Data: {barcode_data} Type: {barcode.type}")  # Log barcode data with type
+                    barcode_output.append(barcode_data)
     else:
         # Traverse through all the detected barcodes in image
         for barcode in detectedBarcodes:
